@@ -1,0 +1,149 @@
+/* css/style.css */
+
+/* Import Google Font (Inter) if not already linked in HTML, or if you prefer CSS import */
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); 
+
+body {
+    font-family: 'Inter', sans-serif;
+    /* Background color is set by Tailwind in body tag,
+       but you can override or add global styles here */
+}
+
+/* Screen transition animations (already in HTML style tag for simplicity, but can be moved here) */
+.screen {
+     display: none; /* Handled by JS - initial state can be set here or in JS */
+     animation: fadeIn 0.5s ease-in-out; 
+}
+
+.screen.active {
+    /* display: block; */
+}
+
+ @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+} 
+
+/* Custom button styles (can extend Tailwind or create unique ones) */
+.btn-primary {
+    @apply bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md;
+    @apply hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+    @apply transition-all duration-300 ease-in-out transform hover:scale-105;
+}
+
+.btn-secondary {
+    @apply bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-md;
+    @apply hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2;
+    @apply transition-all duration-300 ease-in-out transform hover:scale-105;
+}
+
+/* Styling for navigation buttons to show active state more clearly */
+.nav-button.active-nav {
+    @apply bg-indigo-600 text-white;
+    /* box-shadow: 0 0 0 2px theme('colors.indigo.500'); */
+}
+
+
+/* Input field focus animation */
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus {
+    /* Tailwind handles focus rings, but you can add more subtle animations */
+    transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* Card hover effect (for dashboard items or transaction list items) */
+.card-hover {
+    @apply transition-all duration-300 ease-in-out;
+}
+.card-hover:hover {
+    @apply transform -translate-y-1 shadow-xl;
+}
+
+/* Table row hover effect */
+#transactions-table-body tr:hover {
+    @apply bg-indigo-50; /* Tailwind class for light indigo background */
+     transition: background-color 0.2s ease-in-out; 
+}
+
+/* Specific styles for transaction types in table */
+.transaction-income td:nth-child(2) { /* Amount column for income */
+    @apply text-green-600 font-semibold;
+}
+.transaction-income td:nth-child(3) span { /* Type column for income */
+    @apply bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.transaction-expense td:nth-child(2) { /* Amount column for expense */
+    @apply text-red-600 font-semibold;
+}
+.transaction-expense td:nth-child(3) span { /* Type column for expense */
+    @apply bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+
+/* Modal styles (already in HTML for Tailwind, but can be enhanced here) */
+
+#edit-modal {
+    transition: opacity 0.3s ease-in-out;
+}
+#edit-modal > div {
+    transition: transform 0.3s ease-in-out;
+}
+
+
+/* Message styling for form feedback */
+#form-message.success {
+    @apply text-green-600 bg-green-50 p-3 rounded-md border border-green-200;
+    animation: popIn 0.3s ease-out;
+}
+
+#form-message.error {
+    @apply text-red-600 bg-red-50 p-3 rounded-md border border-red-200;
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+
+/* Parallax background (already in HTML style tag) */
+
+.parallax-bg {
+    background-image: url('https://placehold.co/1920x1080/e0e7ff/4f46e5?text=Fundo+Abstrato');
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.1;
+}
+
+
+/* Responsive adjustments if needed beyond Tailwind's capabilities */
+@media (max-width: 640px) {
+    .nav-button span { /* Hide text on small screens if icons are present */
+        /* display: none; */
+    }
+    .nav-button i {
+        /* font-size: 1.25rem; /* Make icons slightly larger if text is hidden */
+    }
+    /* Adjust padding or margins for smaller screens if necessary */
+    /* main {
+        padding: 1rem;
+    } */
+}
+
+/* Ensure charts are responsive */
+canvas {
+    max-width: 100%;
+    height: auto !important; /* Override Chart.js inline style if it causes issues */
+}

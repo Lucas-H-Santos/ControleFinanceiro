@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Pessoal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-track { background: #2d3748; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4a5568; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #718096; }
+        
+        .parallax-bg {
+            background-image: url('https://placehold.co/1920x1080/e0e7ff/4f46e5?text=Fundo+Abstrato');
+            background-attachment: fixed; background-position: center; background-repeat: no-repeat; background-size: cover;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            opacity: 0.1; transition: opacity 0.3s ease-in-out;
+        }
+        .dark .parallax-bg { opacity: 0.05; }
+        #theme-toggle-button { transition: background-color 0.3s ease, color 0.3s ease; }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+    </style>
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased">
+    <div class="parallax-bg"></div>
+
+    <div class="container mx-auto min-h-screen flex flex-col items-center p-4 selection:bg-indigo-500 selection:text-white">
+        
+        <header class="w-full max-w-4xl mb-8 text-center relative pt-8 md:pt-12">
+            <div class="absolute top-4 right-4 md:top-6 md:right-6">
+                <button id="theme-toggle-button" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400" aria-label="Alternar tema">
+                    <i class="fas fa-moon text-slate-700 dark:text-yellow-300 text-xl"></i>
+                    <i class="fas fa-sun text-yellow-500 dark:text-yellow-400 text-xl hidden"></i>
+                </button>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-indigo-600 dark:text-indigo-400">
+                <i class="fas fa-wallet mr-2"></i>Meu Controle Financeiro
+            </h1>
+            <p class="text-slate-600 dark:text-slate-400 mt-2 text-lg">Gerencie suas finanças de forma simples e eficaz.</p>
+        </header>
+
+        <nav class="w-full max-w-md mb-8 bg-white dark:bg-slate-800 shadow-xl rounded-xl p-2 flex justify-around space-x-1">
+            <button id="nav-home" class="nav-button flex-1 py-3 px-4 text-sm font-medium text-center rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500" data-screen="home-screen">
+                <i class="fas fa-plus-circle mr-1"></i>Adicionar
+            </button>
+            <a href="dashboard.html" id="nav-dashboard-link-index" class="nav-button flex-1 py-3 px-4 text-sm font-medium text-center text-slate-700 dark:text-slate-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <i class="fas fa-chart-pie mr-1"></i>Dashboard
+            </a>
+            <button id="nav-transactions" class="nav-button flex-1 py-3 px-4 text-sm font-medium text-center rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500" data-screen="transactions-screen">
+                <i class="fas fa-list-ul mr-1"></i>Transações
+            </button>
+        </nav>
+
+        <main class="w-full max-w-4xl bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-6 md:p-8">
+            <section id="home-screen" class="screen active">
+                <h2 class="text-2xl font-semibold text-indigo-700 dark:text-indigo-400 mb-6 flex items-center"><i class="fas fa-edit mr-3 text-indigo-500 dark:text-indigo-400"></i>Registrar Nova Transação</h2>
+                <form id="transaction-form" class="space-y-6">
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
+                        <input type="text" id="description" name="description" required
+                               class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                               placeholder="Ex: Salário, Compra no mercado">
+                    </div>
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Valor (R$)</label>
+                        <input type="number" id="amount" name="amount" step="0.01" required
+                               class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition-colors" 
+                               placeholder="0.00" style="-moz-appearance: textfield;">
+                    </div>
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data</label>
+                        <input type="date" id="date" name="date" required
+                               class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                        <select id="category" name="category" required
+                                class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                            <option value="" disabled selected>Selecione uma categoria</option>
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="moradia">Moradia</option>
+                            <option value="transporte">Transporte</option>
+                            <option value="saude">Saúde</option>
+                            <option value="lazer">Lazer</option>
+                            <option value="educacao">Educação</option>
+                            <option value="vestuario">Vestuário</option>
+                            <option value="salario">Salário</option>
+                            <option value="investimentos">Investimentos</option>
+                            <option value="outros-receita">Outras Receitas</option>
+                            <option value="outros-despesa">Outras Despesas</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Tipo:</span>
+                        <div class="flex items-center">
+                            <input type="radio" id="income" name="type" value="income" checked class="h-4 w-4 text-green-600 border-slate-300 dark:border-slate-500 focus:ring-green-500 dark:focus:ring-offset-slate-800">
+                            <label for="income" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Receita</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="expense" name="type" value="expense" class="h-4 w-4 text-red-600 border-slate-300 dark:border-slate-500 focus:ring-red-500 dark:focus:ring-offset-slate-800">
+                            <label for="expense" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Despesa</label>
+                        </div>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-all duration-300 ease-in-out transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i>Salvar Transação
+                    </button>
+                </form>
+                <div id="form-message" class="mt-4 text-center"></div>
+            </section>
+
+            <section id="dashboard-screen" class="screen">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-indigo-700 dark:text-indigo-400 flex items-center"><i class="fas fa-tachometer-alt mr-3 text-indigo-500 dark:text-indigo-400"></i>Resumo Financeiro</h2>
+                    <a href="dashboard.html" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline">
+                        Ver Dashboard Detalhado <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-green-50 dark:bg-green-700/20 p-6 rounded-xl shadow-lg border border-green-200 dark:border-green-700">
+                        <h3 class="text-lg font-medium text-green-700 dark:text-green-300 mb-1">Total de Receitas</h3>
+                        <p id="total-income" class="text-3xl font-bold text-green-600 dark:text-green-400">R$ 0,00</p>
+                    </div>
+                    <div class="bg-red-50 dark:bg-red-700/20 p-6 rounded-xl shadow-lg border border-red-200 dark:border-red-700">
+                        <h3 class="text-lg font-medium text-red-700 dark:text-red-300 mb-1">Total de Despesas</h3>
+                        <p id="total-expense" class="text-3xl font-bold text-red-600 dark:text-red-400">R$ 0,00</p>
+                    </div>
+                    <div class="bg-indigo-50 dark:bg-indigo-700/20 p-6 rounded-xl shadow-lg border border-indigo-200 dark:border-indigo-700">
+                        <h3 class="text-lg font-medium text-indigo-700 dark:text-indigo-300 mb-1">Saldo Atual</h3>
+                        <p id="current-balance" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-slate-800/70 p-6 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700">
+                        <h3 class="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-4">Receitas vs. Despesas</h3>
+                        <canvas id="incomeExpenseChart" class="max-h-80"></canvas>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800/70 p-6 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700">
+                        <h3 class="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-4">Histórico de Saldo (Últimos 30 dias)</h3>
+                        <canvas id="balanceHistoryChart" class="max-h-80"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="transactions-screen" class="screen">
+                <h2 class="text-2xl font-semibold text-indigo-700 dark:text-indigo-400 mb-6 flex items-center"><i class="fas fa-history mr-3 text-indigo-500 dark:text-indigo-400"></i>Histórico de Transações</h2>
+                <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="relative w-full sm:w-auto">
+                        <input type="text" id="search-transactions" placeholder="Buscar transações..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400 dark:text-slate-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="filter-type" class="text-sm font-medium text-slate-700 dark:text-slate-300">Filtrar por:</label>
+                        <select id="filter-type" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="all">Todos</option>
+                            <option value="income">Receitas</option>
+                            <option value="expense">Despesas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto bg-white dark:bg-slate-800/70 rounded-lg shadow-md">
+                    <table class="w-full min-w-max text-sm text-left text-slate-600 dark:text-slate-400">
+                        <thead class="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-100 dark:bg-slate-700/80">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Descrição</th>
+                                <th scope="col" class="px-6 py-3">Valor</th>
+                                <th scope="col" class="px-6 py-3">Tipo</th>
+                                <th scope="col" class="px-6 py-3">Categoria</th>
+                                <th scope="col" class="px-6 py-3">Data</th>
+                                <th scope="col" class="px-6 py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table-body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="no-transactions-message" class="text-center text-slate-500 dark:text-slate-400 mt-8 py-4 hidden">Nenhuma transação registrada ainda.</p>
+            </section>
+        </main>
+
+        <footer class="w-full max-w-4xl mt-12 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p class="mb-1">
+                &copy; <span id="current-year"></span> 
+                <a href="https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                    <i class="fab fa-linkedin mr-1"></i>Lucas Santos no LinkedIn
+                </a>. Todos os direitos reservados.
+            </p>
+            <p>Feito com <i class="fas fa-heart text-red-500"></i> e Tailwind CSS.</p>
+        </footer>
+    </div> 
+
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/80 dark:bg-black/80 flex items-center justify-center p-4 hidden z-50 transition-opacity duration-300 opacity-0">
+        <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-lg transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-indigo-700 dark:text-indigo-400">Editar Transação</h2>
+                <button id="close-modal-button" class="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-2xl">&times;</button>
+            </div>
+            <form id="edit-transaction-form" class="space-y-6">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label for="edit-description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
+                    <input type="text" id="edit-description" required class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="edit-amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Valor (R$)</label>
+                    <input type="number" id="edit-amount" step="0.01" required class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="edit-date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data</label>
+                    <input type="date" id="edit-date" required class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="edit-category" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                    <select id="edit-category" name="edit-category" required
+                            class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <option value="" disabled>Selecione uma categoria</option>
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="moradia">Moradia</option>
+                        <option value="transporte">Transporte</option>
+                        <option value="saude">Saúde</option>
+                        <option value="lazer">Lazer</option>
+                        <option value="educacao">Educação</option>
+                        <option value="vestuario">Vestuário</option>
+                        <option value="salario">Salário</option>
+                        <option value="investimentos">Investimentos</option>
+                        <option value="outros-receita">Outras Receitas</option>
+                        <option value="outros-despesa">Outras Despesas</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Tipo:</span>
+                    <div class="flex items-center">
+                        <input type="radio" id="edit-income" name="edit-type" value="income" class="h-4 w-4 text-green-600 border-slate-300 dark:border-slate-500 focus:ring-green-500">
+                        <label for="edit-income" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Receita</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="edit-expense" name="edit-type" value="expense" class="h-4 w-4 text-red-600 border-slate-300 dark:border-slate-500 focus:ring-red-500">
+                        <label for="edit-expense" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Despesa</label>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                     <button type="button" id="cancel-edit-button" class="px-6 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
